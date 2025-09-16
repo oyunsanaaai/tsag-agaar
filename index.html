@@ -1,70 +1,50 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="mn">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Oyunsanaa · Weather</title>
-  <style>
-    :root{
-      --brand:#AC532A;
-      --text:#222;
-      --muted:#5e5e5e;
-      --glass-bg:rgba(255,255,255,.5);
-      --glass-brd:rgba(255,255,255,.7);
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Arial;
-      color:var(--text);
-      background:linear-gradient(180deg,#f9f9fb 0%, #eaecef 100%);
-      display:flex; justify-content:center; align-items:flex-start; padding:24px;
-    }
-    .wrap{width:min(1024px,100%)}
-    header{display:flex; gap:16px; align-items:center; justify-content:space-between; margin-bottom:16px}
-    .title{font-weight:800; font-size:24px; color:var(--brand); letter-spacing:.2px; text-shadow:0 0 28px rgba(172,83,42,.25)}
-    .search{display:flex; gap:10px; width:100%; max-width:560px}
-    .input{
-      flex:1; height:44px; padding:0 14px; border-radius:12px; border:1px solid var(--glass-brd);
-      background:var(--glass-bg); backdrop-filter:blur(14px); color:var(--text); outline:none;
-    }
-    .btn{
-      height:44px; padding:0 16px; border:none; border-radius:12px; background:var(--brand); color:#fff; cursor:pointer;
-      box-shadow:0 0 30px rgba(172,83,42,.28);
-    }
-    .grid{display:grid; grid-template-columns:1.1fr .9fr; gap:16px}
-    .card{
-      position:relative;
-      background:var(--glass-bg); border:1px solid var(--glass-brd); backdrop-filter:blur(14px);
-      border-radius:16px; padding:18px; min-height:220px; box-shadow:0 0 34px rgba(172,83,42,.18);
-    }
-    .muted{color:var(--muted)}
-    .temp{font-size:56px; font-weight:800; line-height:1; margin:6px 0 10px}
-    .meta{display:flex; gap:18px; color:var(--muted); font-size:14px; flex-wrap:wrap}
-    .forecast{display:flex; gap:12px; overflow-x:auto; padding-bottom:4px}
-    .chip{
-      min-width:120px; text-align:center; padding:10px; border-radius:12px;
-      background:rgba(255,255,255,.6); border:1px solid var(--glass-brd);
-    }
-    .chip .d{font-size:12px; color:var(--muted); margin-bottom:6px}
-    .chip .t{font-weight:700}
-    .skeleton{
-      --sh:220px;
-      min-height:var(--sh);
-      background:linear-gradient(90deg, rgba(0,0,0,.05) 25%, rgba(0,0,0,.08) 37%, rgba(0,0,0,.05) 63%) 0/200% 100%;
-      animation:loading 1.2s infinite;
-      border-radius:16px; border:1px solid var(--glass-brd);
-    }
-    @keyframes loading{to{background-position:-200% 0}}
-    .err{
-      position:absolute; inset:auto 16px 16px 16px;
-      padding:10px 12px; border-radius:10px; border:1px solid rgba(0,0,0,.08);
-      background:rgba(255,235,228,.8); color:#6b2d16; font-size:14px;
-    }
-    @media (max-width:900px){ .grid{grid-template-columns:1fr} }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Oyunsanaa · Weather</title>
+<style>
+  :root{
+    --brand:#AC532A;
+    --text:#222; --muted:#5e5e5e;
+    --glass-bg:rgba(255,255,255,.5);
+    --glass-brd:rgba(255,255,255,.7);
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{
+    margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Arial;
+    color:var(--text); background:linear-gradient(180deg,#f9f9fb 0%, #eaecef 100%);
+    display:flex; justify-content:center; align-items:flex-start; padding:24px;
+  }
+  .wrap{width:min(1100px,100%)}
+  header{display:flex; gap:16px; align-items:center; justify-content:space-between; margin-bottom:16px}
+  .title{font-weight:800; font-size:24px; color:var(--brand); text-shadow:0 0 28px rgba(172,83,42,.25)}
+  .search{display:flex; gap:10px; width:100%; max-width:560px}
+  .input{
+    flex:1; height:44px; padding:0 14px; border-radius:12px; border:1px solid var(--glass-brd);
+    background:var(--glass-bg); backdrop-filter:blur(14px); color:var(--text); outline:none;
+  }
+  .btn{height:44px; padding:0 16px; border:none; border-radius:12px; background:var(--brand); color:#fff; cursor:pointer; box-shadow:0 0 30px rgba(172,83,42,.28)}
+  .grid{display:grid; grid-template-columns: 1.1fr .9fr .7fr; gap:16px}
+  .card{
+    position:relative; background:var(--glass-bg); border:1px solid var(--glass-brd); backdrop-filter:blur(14px);
+    border-radius:16px; padding:18px; min-height:220px; box-shadow:0 0 34px rgba(172,83,42,.18);
+  }
+  .muted{color:var(--muted)}
+  .temp{font-size:56px; font-weight:800; line-height:1; margin:6px 0 10px}
+  .meta{display:flex; gap:18px; color:var(--muted); font-size:14px; flex-wrap:wrap}
+  .forecast{display:flex; gap:12px; overflow-x:auto; padding-bottom:4px}
+  .chip{min-width:120px; text-align:center; padding:10px; border-radius:12px; background:rgba(255,255,255,.6); border:1px solid var(--glass-brd)}
+  .chip .d{font-size:12px; color:var(--muted); margin-bottom:6px}
+  .chip .t{font-weight:700}
+  .skeleton{--sh:220px; min-height:var(--sh); background:linear-gradient(90deg, rgba(0,0,0,.05) 25%, rgba(0,0,0,.08) 37%, rgba(0,0,0,.05) 63%) 0/200% 100%; animation:loading 1.2s infinite; border-radius:16px; border:1px solid var(--glass-brd)}
+  @keyframes loading{to{background-position:-200% 0}}
+  .err{position:absolute; inset:auto 16px 16px 16px; padding:10px 12px; border-radius:10px; border:1px solid rgba(0,0,0,.08); background:rgba(255,235,228,.8); color:#6b2d16; font-size:14px}
+  .aqi-badge{display:inline-block; padding:4px 8px; border-radius:10px; font-weight:700}
+  @media (max-width:1000px){ .grid{grid-template-columns:1fr 1fr} }
+  @media (max-width:700px){ .grid{grid-template-columns:1fr} }
+</style>
 </head>
 <body>
   <div class="wrap">
@@ -79,22 +59,22 @@
     <div class="grid">
       <section class="card" id="card-today"><div class="skeleton" style="--sh:220px"></div></section>
       <section class="card" id="card-forecast"><div class="skeleton" style="--sh:220px"></div></section>
+      <section class="card" id="card-aqi"><div class="skeleton" style="--sh:220px"></div></section>
     </div>
   </div>
 
 <script>
+  // ЭНЭГЭЭРЭЭ үлдээгээрэй: өөрийн тогтмол домэйн
   const API_BASE = "https://tsag-agaar-kappa.vercel.app";
 
   const elToday = document.getElementById("card-today");
   const elForecast = document.getElementById("card-forecast");
+  const elAQI = document.getElementById("card-aqi");
   const frm = document.getElementById("frm");
   const coords = document.getElementById("coords");
   const DEFAULT = { lat: 47.92, lon: 106.92 };
 
-  function dateLabel(iso){
-    const d = new Date(iso);
-    return d.toLocaleDateString("mn-MN",{weekday:"short", month:"short", day:"numeric"});
-  }
+  function dateLabel(iso){ const d = new Date(iso); return d.toLocaleDateString("mn-MN",{weekday:"short", month:"short", day:"numeric"}); }
   function iconFor(code){
     if ([0].includes(code)) return "☀️";
     if ([1,2,3,45,48].includes(code)) return "⛅️";
@@ -103,17 +83,25 @@
     if (code>=95) return "⛈️";
     return "🌤️";
   }
-  async function fetchWeather(lat,lon){
+  function aqiColor(cat){
+    return {
+      "Good":"#5cb85c","Moderate":"#f0ad4e","Unhealthy for SG":"#d9534f",
+      "Unhealthy":"#c9302c","Very Unhealthy":"#7a1ea1","Hazardous":"#4a0d0d"
+    }[cat] || "#999";
+  }
+
+  async function fetchAll(lat,lon){
     const r = await fetch(`${API_BASE}/api/weather?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`);
     if(!r.ok) throw new Error(`API ${r.status}`);
     const j = await r.json();
     if (!j.ok) throw new Error(j.error || "API error");
-    return j.data;
+    return j; // {weather, air, aqi}
   }
-  function renderToday(data){
-    const c = data.current_weather;
-    const rh = data.hourly && data.hourly.relative_humidity_2m ? data.hourly.relative_humidity_2m[0] : "—";
-    const p  = data.hourly && data.hourly.pressure_msl ? data.hourly.pressure_msl[0] : "—";
+
+  function renderToday(weather){
+    const c = weather.current_weather;
+    const rh = weather.hourly?.relative_humidity_2m?.[0] ?? "—";
+    const p  = weather.hourly?.pressure_msl?.[0] ?? "—";
     elToday.innerHTML =
       `<div class="muted" style="font-weight:700;margin-bottom:6px">Өнөөдөр · ${
         new Date(c.time).toLocaleTimeString("mn-MN",{hour:"2-digit",minute:"2-digit"})
@@ -125,8 +113,9 @@
          <div>Даралт: ${p} hPa</div>
        </div>`;
   }
-  function renderForecast(data){
-    const d = data.daily;
+
+  function renderForecast(weather){
+    const d = weather.daily;
     const chips = d.time.map((t,i)=>
       `<div class="chip">
          <div class="d">${dateLabel(t)}</div>
@@ -137,29 +126,51 @@
     ).join("");
     elForecast.innerHTML = `<div class="muted" style="font-weight:700;margin-bottom:10px">7 хоног</div><div class="forecast">${chips}</div>`;
   }
-  function showError(container,msg){
-    container.innerHTML = container.innerHTML + `<div class="err">Алдаа: ${msg}</div>`;
+
+  function renderAQI(aqi){
+    const color = aqiColor(aqi.category);
+    elAQI.innerHTML =
+      `<div class="muted" style="font-weight:700;margin-bottom:8px">Агаарын чанар (US AQI)</div>
+       <div style="display:flex;gap:14px;align-items:center">
+         <div class="aqi-badge" style="background:${color}; color:#fff">${aqi.category}</div>
+         <div style="font-size:42px; font-weight:800">${Math.round(aqi.value)}</div>
+       </div>
+       <div class="meta" style="margin-top:10px">
+         <div>PM2.5: ${aqi.pm25?.toFixed?.(1) ?? aqi.pm25} µg/m³</div>
+         <div>PM10: ${aqi.pm10?.toFixed?.(1) ?? aqi.pm10} µg/m³</div>
+       </div>
+       <div class="muted" style="margin-top:10px">${aqi.advice}</div>`;
   }
+
+  function showError(el,msg){ el.innerHTML = `<div class="err">Алдаа: ${msg}</div>`; }
+
   async function load(lat=DEFAULT.lat, lon=DEFAULT.lon){
+    // skeleton
     elToday.innerHTML = `<div class="skeleton" style="--sh:220px"></div>`;
     elForecast.innerHTML = `<div class="skeleton" style="--sh:220px"></div>`;
+    elAQI.innerHTML = `<div class="skeleton" style="--sh:220px"></div>`;
+
     try{
-      const data = await fetchWeather(lat,lon);
-      renderToday(data);
-      renderForecast(data);
+      const { weather, aqi } = await fetchAll(lat,lon);
+      renderToday(weather);
+      renderForecast(weather);
+      renderAQI(aqi);
     }catch(e){
       showError(elToday, e.message || e);
       showError(elForecast, e.message || e);
+      showError(elAQI, e.message || e);
     }
   }
-  frm.addEventListener("submit",(ev)=>{
+
+  document.getElementById("frm").addEventListener("submit",(ev)=>{
     ev.preventDefault();
     let lat = DEFAULT.lat, lon = DEFAULT.lon;
     const v = (coords.value || "").trim();
     if (v.includes(",")) { const a = v.split(","); lat = Number(a[0].trim()); lon = Number(a[1].trim()); }
     load(lat,lon);
   });
-  load();
+
+  load(); // default Ulaanbaatar
 </script>
 </body>
 </html>
