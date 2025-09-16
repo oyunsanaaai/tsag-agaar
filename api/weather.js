@@ -1,17 +1,15 @@
 // api/weather.js
 export default async function handler(req, res) {
-  // CORS (incl. preflight)
+  // CORS (+ preflight)
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  if (req.method === "OPTIONS") {
-    res.status(200).end();
-    return;
-  }
+  if (req.method === "OPTIONS") return res.status(200).end();
 
   const { lat = "47.92", lon = "106.92" } = req.query;
 
-  const url =
+  // 1) Weather
+  const wUrl =
     "https://api.open-meteo.com/v1/forecast" +
     `?latitude=${encodeURIComponent(lat)}` +
     `&longitude=${encodeURIComponent(lon)}` +
@@ -20,12 +18,50 @@ export default async function handler(req, res) {
     "&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum" +
     "&forecast_days=7&timezone=auto";
 
+  // 2) Air Quality (AQI + PM2.5/PM10)
+  const aqiUrl =
+    "https://air-quality-api.open-meteo.com/v1/air-quality" +
+    `?latitude=${encodeURIComponent(lat)}` +
+    `&longitude=${encodeURIComponent(lon)}` +
+    "&hourly=pm2_5,pm10,us_aqi&timezone=auto";
+
   try {
-    const r = await fetch(url);
-    if (!r.ok) throw new Error(`Upstream ${r.status}`);
-    const data = await r.json();
-    res.status(200).json({ ok: true, data });
+    const [wRes, aqiRes] = await Promise.all([fetch(wUrl), fetch(aqiUrl)]);
+    if (!wRes.ok) throw new Error(`Weather upstream ${wRes.status}`);
+    if (!aqiRes.ok) throw new Error(`AQI upstream ${aqiRes.status}`);
+
+    const weather = await wRes.json();
+    const air = await aqiRes.json();
+
+    // Сүүлийн цагийн AQI-г авна
+    const i = air.hourly.us_aqi.length - 1;
+    const usAQI = air.hourly.us_aqi[i];
+    const pm25 = air.hourly.pm2_5[i];
+    const pm10 = air.hourly.pm10[i];
+
+    // AQI ангилал
+    const cat =
+      usAQI <= 50 ? "Good" :
+      usAQI <= 100 ? "Moderate" :
+      usAQI <= 150 ? "Unhealthy for SG" :
+      usAQI <= 200 ? "Unhealthy" :
+      usAQI <= 300 ? "Very Unhealthy" : "Hazardous";
+
+    const advice =
+      usAQI <= 50 ? "Агаартай гадаа алхахад тохиромжтой." :
+      usAQI <= 100 ? "Мэдрэмтгий хүмүүс болгоомжлоорой." :
+      usAQI <= 150 ? "Мэдрэмтгий бүлэг гадаа удахгүй." :
+      usAQI <= 200 ? "Гадаа үйл ажиллагаагаа багасга." :
+      usAQI <= 300 ? "Гадуур хязгаарла, маск зүү." :
+      "Гадуур боломжтой бол гарахгүй байх нь дээр.";
+
+    res.status(200).json({
+      ok: true,
+      weather,
+      air,
+      aqi: { value: usAQI, pm25, pm10, category: cat, advice }
+    });
   } catch (e) {
-    res.status(500).json({ ok: false, error: "Weather API failed", details: String(e) });
+    res.status(500).json({ ok: false, error: String(e) });
   }
 }
