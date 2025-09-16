@@ -64,7 +64,7 @@
   </div>
 
 <script>
-  // ЭНЭГЭЭРЭЭ үлдээгээрэй: өөрийн тогтмол домэйн
+  // Тогтмол домэйнээ бичсэн (чи аль хэдийнэ ийм домэйнтай)
   const API_BASE = "https://tsag-agaar-kappa.vercel.app";
 
   const elToday = document.getElementById("card-today");
@@ -74,6 +74,7 @@
   const coords = document.getElementById("coords");
   const DEFAULT = { lat: 47.92, lon: 106.92 };
 
+  function safeRound(n){ const x = Number(n); return Number.isFinite(x) ? Math.round(x) : "—"; }
   function dateLabel(iso){ const d = new Date(iso); return d.toLocaleDateString("mn-MN",{weekday:"short", month:"short", day:"numeric"}); }
   function iconFor(code){
     if ([0].includes(code)) return "☀️";
@@ -84,10 +85,7 @@
     return "🌤️";
   }
   function aqiColor(cat){
-    return {
-      "Good":"#5cb85c","Moderate":"#f0ad4e","Unhealthy for SG":"#d9534f",
-      "Unhealthy":"#c9302c","Very Unhealthy":"#7a1ea1","Hazardous":"#4a0d0d"
-    }[cat] || "#999";
+    return { "Good":"#5cb85c","Moderate":"#f0ad4e","Unhealthy for SG":"#d9534f","Unhealthy":"#c9302c","Very Unhealthy":"#7a1ea1","Hazardous":"#4a0d0d" }[cat] || "#999";
   }
 
   async function fetchAll(lat,lon){
@@ -95,20 +93,20 @@
     if(!r.ok) throw new Error(`API ${r.status}`);
     const j = await r.json();
     if (!j.ok) throw new Error(j.error || "API error");
-    return j; // {weather, air, aqi}
+    return j; // {weather, aqi}
   }
 
   function renderToday(weather){
-    const c = weather.current_weather;
-    const rh = weather.hourly?.relative_humidity_2m?.[0] ?? "—";
-    const p  = weather.hourly?.pressure_msl?.[0] ?? "—";
+    const c = weather.current_weather || {};
+    const rh = safeRound(weather.hourly?.relative_humidity_2m?.[0]);
+    const p  = safeRound(weather.hourly?.pressure_msl?.[0]);
     elToday.innerHTML =
-      `<div class="muted" style="font-weight:700;margin-bottom:6px">Өнөөдөр · ${
-        new Date(c.time).toLocaleTimeString("mn-MN",{hour:"2-digit",minute:"2-digit"})
-      }</div>
-       <div class="temp">${Math.round(c.temperature)}°C ${iconFor(c.weathercode)}</div>
+      `<div class="muted" style="font-weight:700;margin-bottom:6px">
+         Өнөөдөр · ${c.time ? new Date(c.time).toLocaleTimeString("mn-MN",{hour:"2-digit",minute:"2-digit"}) : ""}
+       </div>
+       <div class="temp">${safeRound(c.temperature)}°C ${iconFor(Number(c.weathercode))}</div>
        <div class="meta">
-         <div>Салхи: ${c.windspeed} км/ц</div>
+         <div>Салхи: ${safeRound(c.windspeed)} км/ц</div>
          <div>Чийгшил: ${rh}%</div>
          <div>Даралт: ${p} hPa</div>
        </div>`;
@@ -116,14 +114,28 @@
 
   function renderForecast(weather){
     const d = weather.daily;
-    const chips = d.time.map((t,i)=>
-      `<div class="chip">
-         <div class="d">${dateLabel(t)}</div>
-         <div class="t">${Math.round(d.temperature_2m_min[i])}° / ${Math.round(d.temperature_2m_max[i])}°</div>
-         <div style="margin-top:6px">${iconFor(d.weathercode[i])}</div>
-         <div style="font-size:12px;color:var(--muted);margin-top:4px">Rain: ${d.precipitation_sum[i]}mm</div>
-       </div>`
-    ).join("");
+    const n = Math.min(
+      d.time?.length ?? 0,
+      d.temperature_2m_min?.length ?? 0,
+      d.temperature_2m_max?.length ?? 0,
+      d.weathercode?.length ?? 0,
+      d.precipitation_sum?.length ?? 0
+    );
+
+    const chips = Array.from({length:n}).map((_,i)=>{
+      const tmin = safeRound(d.temperature_2m_min[i]);
+      const tmax = safeRound(d.temperature_2m_max[i]);
+      const rain = safeRound(d.precipitation_sum[i]);
+      const code = Number(d.weathercode[i]);
+      return `
+        <div class="chip">
+          <div class="d">${dateLabel(d.time[i])}</div>
+          <div class="t">${tmin}° / ${tmax}°</div>
+          <div style="margin-top:6px">${iconFor(code)}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">Rain: ${rain}mm</div>
+        </div>`;
+    }).join("");
+
     elForecast.innerHTML = `<div class="muted" style="font-weight:700;margin-bottom:10px">7 хоног</div><div class="forecast">${chips}</div>`;
   }
 
@@ -133,11 +145,11 @@
       `<div class="muted" style="font-weight:700;margin-bottom:8px">Агаарын чанар (US AQI)</div>
        <div style="display:flex;gap:14px;align-items:center">
          <div class="aqi-badge" style="background:${color}; color:#fff">${aqi.category}</div>
-         <div style="font-size:42px; font-weight:800">${Math.round(aqi.value)}</div>
+         <div style="font-size:42px; font-weight:800">${safeRound(aqi.value)}</div>
        </div>
        <div class="meta" style="margin-top:10px">
-         <div>PM2.5: ${aqi.pm25?.toFixed?.(1) ?? aqi.pm25} µg/m³</div>
-         <div>PM10: ${aqi.pm10?.toFixed?.(1) ?? aqi.pm10} µg/m³</div>
+         <div>PM2.5: ${safeRound(aqi.pm25)} µg/m³</div>
+         <div>PM10: ${safeRound(aqi.pm10)} µg/m³</div>
        </div>
        <div class="muted" style="margin-top:10px">${aqi.advice}</div>`;
   }
@@ -145,20 +157,17 @@
   function showError(el,msg){ el.innerHTML = `<div class="err">Алдаа: ${msg}</div>`; }
 
   async function load(lat=DEFAULT.lat, lon=DEFAULT.lon){
-    // skeleton
     elToday.innerHTML = `<div class="skeleton" style="--sh:220px"></div>`;
     elForecast.innerHTML = `<div class="skeleton" style="--sh:220px"></div>`;
     elAQI.innerHTML = `<div class="skeleton" style="--sh:220px"></div>`;
-
     try{
       const { weather, aqi } = await fetchAll(lat,lon);
       renderToday(weather);
       renderForecast(weather);
       renderAQI(aqi);
     }catch(e){
-      showError(elToday, e.message || e);
-      showError(elForecast, e.message || e);
-      showError(elAQI, e.message || e);
+      const m = e.message || e;
+      showError(elToday, m); showError(elForecast, m); showError(elAQI, m);
     }
   }
 
