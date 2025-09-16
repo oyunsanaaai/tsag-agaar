@@ -1,6 +1,6 @@
 // api/weather.js
 export default async function handler(req, res) {
-  // CORS (+ preflight)
+  // CORS (+preflight)
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -8,7 +8,6 @@ export default async function handler(req, res) {
 
   const { lat = "47.92", lon = "106.92" } = req.query;
 
-  // 1) Weather
   const wUrl =
     "https://api.open-meteo.com/v1/forecast" +
     `?latitude=${encodeURIComponent(lat)}` +
@@ -18,7 +17,6 @@ export default async function handler(req, res) {
     "&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum" +
     "&forecast_days=7&timezone=auto";
 
-  // 2) Air Quality (AQI + PM2.5/PM10)
   const aqiUrl =
     "https://air-quality-api.open-meteo.com/v1/air-quality" +
     `?latitude=${encodeURIComponent(lat)}` +
@@ -33,14 +31,12 @@ export default async function handler(req, res) {
     const weather = await wRes.json();
     const air = await aqiRes.json();
 
-    // Сүүлийн цагийн AQI-г авна
     const i = air.hourly.us_aqi.length - 1;
     const usAQI = air.hourly.us_aqi[i];
     const pm25 = air.hourly.pm2_5[i];
     const pm10 = air.hourly.pm10[i];
 
-    // AQI ангилал
-    const cat =
+    const category =
       usAQI <= 50 ? "Good" :
       usAQI <= 100 ? "Moderate" :
       usAQI <= 150 ? "Unhealthy for SG" :
@@ -48,18 +44,17 @@ export default async function handler(req, res) {
       usAQI <= 300 ? "Very Unhealthy" : "Hazardous";
 
     const advice =
-      usAQI <= 50 ? "Агаартай гадаа алхахад тохиромжтой." :
+      usAQI <= 50 ? "Агаарт алхахад тохиромжтой." :
       usAQI <= 100 ? "Мэдрэмтгий хүмүүс болгоомжлоорой." :
       usAQI <= 150 ? "Мэдрэмтгий бүлэг гадаа удахгүй." :
       usAQI <= 200 ? "Гадаа үйл ажиллагаагаа багасга." :
       usAQI <= 300 ? "Гадуур хязгаарла, маск зүү." :
-      "Гадуур боломжтой бол гарахгүй байх нь дээр.";
+      "Гадуур боломжтой бол гарахгүй байх.";
 
     res.status(200).json({
       ok: true,
       weather,
-      air,
-      aqi: { value: usAQI, pm25, pm10, category: cat, advice }
+      aqi: { value: usAQI, pm25, pm10, category, advice }
     });
   } catch (e) {
     res.status(500).json({ ok: false, error: String(e) });
